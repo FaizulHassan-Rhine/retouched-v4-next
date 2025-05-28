@@ -1,115 +1,178 @@
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
+import { useContext, useState, useEffect } from "react";
+import { useRouter } from "next/router";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+import HomeContainer from "../components/HomeContainer/HomeContainer";
+import Navbar from "../components/Navbar/Navbar";
+import PopupMessage from "../components/PopUp/PopupMessage";
+import HiddenUploadFile from "../components/FileUploadPage/HiddenUploadFile";
+// import HowToUse from "../components/HowToUse/HowToUse";
+// import Pricing from "../components/Pricing/Pricing";
+// import Footer2 from "../components/Footer/Footer2";
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import dragImg from "/public/images/dropimg.png"; // OK to use with `img src` directly
 
-export default function Home() {
-  return (
-    <div
-      className={`${geistSans.className} ${geistMono.className} grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]`}
-    >
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/pages/index.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+import { FileContextManager, OrderContextManager } from "@/context/AppContexts";
+import Footer from "@/components/Footer/Footer";
+
+const HomePage = () => {
+  const router = useRouter();
+
+  const [getDrugBool, setDrugBool] = useState(false);
+  const [getPopBool, setPopBool] = useState(false);
+  const [getMsg, setMsg] = useState("");
+  const [elementVisible, setElementVisible] = useState(false);
+
+  const [fileInfo, setFileInfo, getAfterBeforeImg, setAfterBeforeImg] = useContext(FileContextManager);
+  const [getServiceTypeId, setServiceTypeId, getSubscriptionPlanId, setSubscriptionPlanId, getOrderMasterId, setOrderMasterId, getCostDetails, setCostDetails, getOrderDetailInfo, setOrderDetailInfo, getLimitImg, setLimitImg, getLimitUploadImg] = useContext(OrderContextManager);
+
+  const dragOverHandler = (e) => {
+    e.preventDefault();
+    setDrugBool(true);
+  };
+
+  const dragEnterHandler = (e) => {
+    e.preventDefault();
+    setDrugBool(true);
+  };
+
+  const dragLeaveHandler = (e) => {
+    e.preventDefault();
+    setDrugBool(false);
+  };
+
+function dropHandler(ev) {
+  ev.preventDefault();
+  setDrugBool(false);
+  console.log("DROP!");
+
+  let imageArray = [];
+
+  if (ev.dataTransfer.items) {
+    [...ev.dataTransfer.items].forEach(item => {
+      if (item.kind === 'file') {
+        const file = item.getAsFile();
+        const fileType = file.type;
+
+        if (fileType.startsWith("image/")) {
+          const url = URL.createObjectURL(file);
+          imageArray.push({
+            file,
+            src: url,
+            rework: false,
+            proccessImage: {},
+            history: [],
+            status: 'new'
+          });
+        }
+      }
+    });
+  }
+
+  console.log("Dropped files:", imageArray);
+
+  if (imageArray.length > 0) {
+    setFileInfo(imageArray);
+
+    const serializableImages = imageArray.map(img => ({
+      src: img.src,
+      name: img.file.name,
+      type: img.file.type,
+      size: img.file.size,
+      rework: img.rework,
+      proccessImage: img.proccessImage,
+      history: img.history,
+      status: img.status
+    }));
+
+    console.log("Serializable for sessionStorage:", serializableImages);
+    sessionStorage.setItem("selectedImages", JSON.stringify(serializableImages));
+
+    setTimeout(() => {
+      window.location.assign("/upload-image");
+    }, 100);
+
+    // Clean up object URLs after navigation
+    setTimeout(() => {
+      imageArray.forEach(img => URL.revokeObjectURL(img.src));
+    }, 1000);
+  } else {
+    console.warn("⚠️ No valid image files found.");
+    setMsg("No valid images detected.");
+    setPopBool(true);
+  }
 }
+
+
+
+
+  const pastFileFunc = (e) => {
+    const newFile = e.clipboardData.files;
+    const imageTypes = ["image/png", "image/jpeg", "image/tiff"];
+    let imageArray = [];
+
+    for (const file of newFile) {
+      if (imageTypes.includes(file.type)) {
+        const imageUrl = URL.createObjectURL(file);
+        const fileObject = {
+          file,
+          src: imageUrl,
+          rework: false,
+          proccessImage: {},
+          history: [],
+          status: "new",
+        };
+        imageArray.push(fileObject);
+      }
+    }
+
+   if (imageArray.length > 0) {
+  setFileInfo(imageArray); // ✅ Save to context
+  sessionStorage.setItem("selectedImages", JSON.stringify(imageArray)); // ✅ Fallback for page reload
+  router.push("/upload-image");
+}
+
+
+    window.removeEventListener("paste", pastFileFunc);
+  };
+
+  useEffect(() => {
+    // Add paste event listener only on client
+    window.addEventListener("paste", pastFileFunc, { once: true });
+
+    return () => {
+      window.removeEventListener("paste", pastFileFunc);
+    };
+  }, []);
+
+  const PopupCloseFunc = () => setPopBool(false);
+
+  return (
+    <>
+     <Navbar/>
+      <div
+        id="homeContainer"
+        onDrop={dropHandler}
+        onDragOver={dragOverHandler}
+        onDragEnter={dragEnterHandler}
+        onDragLeave={dragLeaveHandler}
+      >
+        <HomeContainer />
+        {/* <HowToUse /> */}
+        {/* <Pricing /> */}
+        {/* <Footer2 /> */}
+        <HiddenUploadFile />
+
+        {getDrugBool && (
+          <img className="fixed w-full h-full top-0 left-0 opacity-90 z-50" src="/images/dropimg.png" alt="Drop Area" />
+        )}
+      </div>
+
+      {getPopBool && (
+        <PopupMessage msg={getMsg} callBackCloseFunc={PopupCloseFunc} dark={true} />
+      )}
+      <Footer/>
+    </>
+  );
+};
+
+export default HomePage;

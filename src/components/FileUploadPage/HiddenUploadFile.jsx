@@ -17,7 +17,7 @@ const HiddenUploadFile = () => {
      const router = useRouter();
     
 
-   const uploadFile = (e) => {
+ const uploadFile = (e) => {
   const newFile = e.target.files;
 
   if (newFile.length > getLimitUploadImg) {
@@ -31,7 +31,7 @@ const HiddenUploadFile = () => {
     if (["image/jpeg", "image/png", "image/tiff", "image/tif"].includes(file.type)) {
       const imageUrl = URL.createObjectURL(file);
       imageArray.push({
-        file: file,
+        file,
         src: imageUrl,
         rework: false,
         proccessImage: {},
@@ -41,7 +41,11 @@ const HiddenUploadFile = () => {
     }
   }
 
-  // 🔐 Store in sessionStorage so the next page can pick it up
+  if (imageArray.length === 0) {
+    console.warn("No valid image files selected.");
+    return;
+  }
+
   const safeArray = imageArray.map(img => ({
     name: img.file.name,
     src: img.src,
@@ -55,9 +59,9 @@ const HiddenUploadFile = () => {
 
   sessionStorage.setItem("selectedImages", JSON.stringify(safeArray));
 
-  // ✅ Route to upload-image normally
   router.push("/upload-image");
 };
+
 
     const PopupCloseFunc = () => {
         setPopBool(false);

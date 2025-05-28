@@ -17,22 +17,11 @@ const InitialDataLoad = () => {
 
   // const location = useLocation();
 
-  async function fetchManifestData() {
-    try {
-      const response = await fetch('/manifest.json'); // Relative path to the manifest file
-      if (!response.ok) {
-        throw new Error('Failed to fetch manifest.json');
-      }
-      const data = await response.json();
-      setApiBasicUrl(data.api_url);
-      return 'success'; 
-    } catch (error) {
-      console.error(error);
-      return 'error';
-    }
-  }
+
 
   const defaultSettingFunc = (token) => {
+    console.log("📥 Default settings loaded with model base:", getModelBaseUrl);
+
     fetch(getApiBasicUrl + "/api/2023-02/default-settings", {
       headers: {
         'Authorization': 'bearer ' + token,
@@ -60,23 +49,7 @@ const InitialDataLoad = () => {
     const data = await response.json();
     return data.results.token.user_logged_in;
   };
-  // const getUserInfoFunc = () => {
-
-  //   localforage.getItem("userInfo").then(data => {
-  //     if (data !== null && Object.keys(data).length > 0) {
-
-  //       const tokenValid = tokenValidationFunc(data.results.token); 
-  //       if(tokenValid){
-  //         setUserInfo(data);
-  //         setToken(data.results.token);
-  //         defaultSettingFunc(data.results.token)
-  //       }else{
-  //         console.log("invalid token")
-  //       }
-
-  //     }
-  //   }).catch((error) => { console.log(error) });
-  // }
+  
 
   const getUserInfoFunc = async () => {
     try {

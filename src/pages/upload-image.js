@@ -1338,7 +1338,7 @@ useEffect(() => {
                 setOpenImg(() => index);
             } else {
                 setTimeout(() => {
-                    navigate("/");
+                    router.push("/");
                 }, 2000);
             }
 

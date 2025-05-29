@@ -59,7 +59,7 @@ const ContactMessageInfo = () => {
 
                   {/* Row 2 - Email */}
                   <div className="flex text-xs sm:text-base">
-                    <p className="w-1.5/5 sm:w-1/5 bg-gradient-to-r from-purple-200 to-purple-300 text-purple-900 px-4 py-1 rounded-md font-semibold">
+                    <p className="w-1.5/5 sm:w-1/5 bg-gradient-to-r from-purple-200 to-purple-300 text-purple-900 px-4 py-1 rounded-md bg-white font-semibold">
                       Email:
                     </p>
                     <p className="w-3.5/5 sm:w-4/5 text-gray-800 ml-3 py-1 sm:ml-0 text-left px-4">

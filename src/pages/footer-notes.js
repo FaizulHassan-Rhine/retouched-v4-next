@@ -147,7 +147,7 @@ const FooterNotes = () => {
                     onChange={handleChange}
                     placeholder="Enter your name"
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2"
+                    className="w-full px-4 py-2 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2"
                   />
 
                   <label
@@ -164,7 +164,7 @@ const FooterNotes = () => {
                     onChange={handleChange}
                     placeholder="Enter your email"
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2"
+                    className="w-full px-4 py-2 border bg-white border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2"
                   />
 
                   <label
@@ -181,7 +181,7 @@ const FooterNotes = () => {
                     onChange={handleChange}
                     placeholder="Enter the subject"
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2"
+                    className="w-full px-4 py-2 border bg-white border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2"
                   />
 
                   <div className="flex flex-col w-full max-w-md mx-auto mt-5">
@@ -196,7 +196,7 @@ const FooterNotes = () => {
                       name="message"
                       value={formData.message}
                       onChange={handleChange}
-                      className="p-2 border border-gray-300 rounded-md focus:outline-none"
+                      className="p-2 border border-gray-300 bg-white rounded-md focus:outline-none"
                       rows="4"
                       placeholder="Type your message here (max 200 characters)"
                       required

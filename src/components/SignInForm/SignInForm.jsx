@@ -411,7 +411,7 @@ function SignInForm({
                             Email
                           </p>
                           <input
-                            className="border-[1px] py-[6px] pl-[10px] rounded pr-[40px] border-solid border-[#5A5555] text-xs font-normal focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
+                            className="border-[1px] bg-white py-[6px] pl-[10px] rounded pr-[40px] border-solid border-[#5A5555] text-xs font-normal focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
                             type="text"
                             onChange={onChangeSingMail}
                             value={getMail}
@@ -426,7 +426,7 @@ function SignInForm({
                             Password
                           </p>
                           <input
-                            className="border-[1px] py-[6px] pl-[10px] rounded pr-[40px] border-solid border-[#5A5555] text-xs font-normal focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
+                            className="border-[1px] bg-white py-[6px] pl-[10px] rounded pr-[40px] border-solid border-[#5A5555] text-xs font-normal focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
                             type="password"
                             onChange={onChangeSingPass}
                             value={getPassword}
@@ -512,7 +512,7 @@ function SignInForm({
                             id="singUpMail"
                             onChange={onChangeSingUpMail}
                             value={getSignUpMail}
-                            className="border-[1px] py-[6px] pl-[10px] rounded pr-[40px] border-solid border-[#5A5555] text-xs font-normal"
+                            className="border-[1px] py-[6px] bg-white pl-[10px] rounded pr-[40px] border-solid border-[#5A5555] text-xs font-normal"
                             type="text"
                             placeholder="example@example.com"
                           />
@@ -574,22 +574,7 @@ function SignInForm({
                             wrapClassName={"group w-full "}
                             className={"w-full"}
                           />
-                          {/* <div
-                                                    id="singInButton"
-                                                    //   onClick={SignInHandleOpen}
-                                                    className="relative p-1 group w-full md:w-auto"
-                                                >
-                                                    <button
-                                                        className="w-full absolute left-1 top-1 py-[14px] px-[24px] rounded bg-[#255646] border-[1px] border-solid border-black text-white text-sm font-medium transition-all duration-100 group-hover:top-0 group-hover:left-0"
-                                                    >
-                                                        Create Account
-                                                    </button>
-                                                    <button
-                                                        className="w-full py-[14px] px-[24px] rounded bg-black border-[1px] border-solid border-black text-white text-sm font-medium"
-                                                    >
-                                                        Create Account
-                                                    </button>
-                                                </div> */}
+                      
                         </div>
                       </div>
                     </form>

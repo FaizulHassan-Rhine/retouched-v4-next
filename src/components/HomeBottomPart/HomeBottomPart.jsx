@@ -1,6 +1,7 @@
 import React from 'react';
 import SignInSignUpBtn from '../SignInSignUpBtn/SignInSignUpBtn';
 
+
 const HomeBottomPart = () => {
     return (
         <div className='pt-[80px] pb-[80px] md:pb-[185px]'>

@@ -7,7 +7,6 @@ import localforage from "localforage";
 
 
 import UserImage from "./UserImage";
-import SignInSignUpBtn from "../SignInSignUpBtn/SignInSignUpBtn";
 import {
   apiUrlContextManager,
   menuContextManager,
@@ -16,6 +15,7 @@ import {
 
 import { useRouter } from "next/router";
 import Link from "next/link";
+import SignInSignUpBtn from "../SignInSignUpBtn/SignInSignUpBtn";
 
 const Navbar = () => {
   const [navbar, setNavbar] = useState(false);

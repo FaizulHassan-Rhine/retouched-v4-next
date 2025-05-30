@@ -1,37 +1,37 @@
-// import { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import { Slide, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useContext, useState } from "react";
+import localforage from "localforage";
 import { apiUrlContextManager, userContextManager } from "@/context/AppContexts";
 import { useRouter } from "next/router";
 import Navbar from "@/components/Navbar/Navbar";
 import Footer from "@/components/Footer/Footer";
 import ButtonOne from "@/components/ButtonOne/ButtonOne";
+import Link from "next/link";
 
 
+const Login = ({onClose,
+  switchBool = true,
 
-const SignUp = () => {
-    const [getSignUpAgreeTerms, setSignUpAgreeTerms] = useState(false);
+  redirectUrl = "", }) => {
+
     const [getPassword, setPassword] = useState("");
     const [getMail, setMail] = useState("");
     const [getSignUpMail, setSignUpMail] = useState("");
     const [getResetMail, setResetMail] = useState("");
     const [getRemember, setRemember] = useState(false)
+    const [getAgreeTerms, setAgreeTerms] = useState(false);
 
     const [getUserInfo, setUserInfo, getToken, setToken] = useContext(userContextManager);
     const [getModelBaseUrl, setModelBaseUrl, getApiBasicUrl, setApiBasicUrl] = useContext(apiUrlContextManager);
-
-
-
-
 
     const router = useRouter();
     // const { prevPath } = location.state ? location.state : '/';
 
     const showToastMessage = (msg) => {
         toast.success(msg, {
-             position: "top-right", // use string instead of toast.POSITION.TOP_RIGHT
+            position: "top-right", // use string instead of toast.POSITION.TOP_RIGHT
         autoClose: 3000,
         transition: Slide,
         });
@@ -39,162 +39,232 @@ const SignUp = () => {
 
     const showToastMessageWarning = (msg) => {
         toast.warning(msg, {
-             position: "top-right", // use string instead of toast.POSITION.TOP_RIGHT
-                    autoClose: 3000,
-                    transition: Slide,
+           position: "top-right", // use string instead of toast.POSITION.TOP_RIGHT
+                   autoClose: 3000,
+                   transition: Slide,
         });
     };
 
     const showToastMessageError = (msg) => {
         toast.error(msg, {
-             position: "top-right", // use string instead of toast.POSITION.TOP_RIGHT
+            position: "top-right", // use string instead of toast.POSITION.TOP_RIGHT
                     autoClose: 3000,
                     transition: Slide,
         });
     };
+    const singInFunc = async (e) => {
+    e.preventDefault();
+    var validRegex =
+      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+
+    if (getMail.length > 0 && getPassword.length > 0) {
+      if (getMail.match(validRegex)) {
+        const signInData = {
+          email: getMail,
+          password: getPassword,
+        };
+
+        try {
+          fetch(getApiBasicUrl + "/api/2023-02/system-sign-in", {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+              Authorization: "bearer " + getToken,
+            },
+            body: JSON.stringify(signInData),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              console.log("signInData", data);
+
+if (data.status_code === 200) {
+  setUserInfo(data);
+  setToken(data.results.token);
+  showToastMessage(data.message);
+  localforage.setItem("userInfo", data);
+  const rememberInfo = {
+    mail: getMail,
+    pass: getPassword,
+  };
+
+  if (getRemember) {
+    localforage.setItem("remember", rememberInfo);
+  } else {
+    localforage.removeItem("remember");
+  }
+
+  if (redirectUrl.length > 0) {
+    router.push(redirectUrl);
+  } else {
+    router.push("/"); // Default redirection to home
+  }
 
 
-    const singUpFunc = async (e) => {
-        e.preventDefault();
-        var validRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-        if (getSignUpMail.length > 0 && getSignUpAgreeTerms) {
+                // onClose(); // Close the modal after successful sign-in
+              } else {
+                showToastMessageWarning(data.message);
+              }
+            });
+        } catch (error) {
+          showToastMessageError(error);
 
-            if (getSignUpMail.match(validRegex)) {
-                const regMail = { "email": getSignUpMail }
-                try {
-
-                    const rawResponse = await fetch(getApiBasicUrl + '/api/2023-02/system-sign-up', {
-                        method: 'POST',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json',
-                            'Authorization': 'bearer ' + getToken
-                        },
-                        body: JSON.stringify(regMail)
-                    });
-
-                    const res = await rawResponse.json();
-                    if
-                        (res.status_code == 200) {
-                        showToastMessage(res.message)
-                        router.push('/');
-                        // onClose()
-                        //   navigate("/thank-you-note")
-                    }
-
-                    else {
-                        showToastMessageWarning(res.message)
-                    }
-
-                } catch (error) {
-                    console.log(error)
-                }
-            } else {
-                showToastMessageError("email format is not valid")
-            }
-        } else {
-            const signUpMail = document.getElementById("singUpMail");
-
-            getSignUpMail.length == 0 && showToastMessageError("Please provide your email address.");
-            getSignUpMail.length == 0 && signUpMail.classList.add("warnintField");
-
-            !getSignUpAgreeTerms && showToastMessageError("Please agree to the terms and conditions.");
         }
+      } else {
+        showToastMessageError("Email format is not valid!!");
+
+      }
+    } else {
+      const singInMail = document.getElementById("signInMailId");
+      const signInPass = document.getElementById("singInPass");
+
+      getMail.length == 0 &&
+        showToastMessageError("Please provide your email address.");
+      getMail.length == 0 && singInMail.classList.add("warnintField");
+
+      getPassword.length == 0 &&
+        showToastMessageError("Please enter your password");
+      getPassword.length == 0 && signInPass.classList.add("warnintField");
+      // getAgreeTerms == false &&
+      //   showToastMessageError("Please agree to the terms and conditions");
+    }
+  };
+
+
+
+    const rememberFunc = () => {
+        localforage.getItem("remember").then(data => {
+            if (data !== null && Object.keys(data).length > 0) {
+                setMail(data.mail)
+                setPassword(data.pass)
+                setRemember(true)
+            }
+        })
     }
 
-    const onChangeSingUpMail = (e) => {
-        const signUpMail = document.getElementById("singUpMail");
-
+    const onChangeSingMail = (e) => {
+        const singInMail = document.getElementById("signInMailId");
         const inputValue = e.target.value;
         const sanitizedValue = inputValue.replace(/\s/g, ''); // Remove spaces
-        setSignUpMail(sanitizedValue)
-
-        sanitizedValue.length > 0 && signUpMail.classList.contains("warnintField") && signUpMail.classList.remove("warnintField");
+        setMail(sanitizedValue)
+        sanitizedValue.length > 0 && singInMail.classList.contains("warnintField") && singInMail.classList.remove("warnintField");
     }
+
+
+    const onChangeSingPass = (e) => {
+        const signInPass = document.getElementById("singInPass")
+        const inputValue = e.target.value;
+        const sanitizedValue = inputValue.replace(/\s/g, ''); // Remove spaces
+        setPassword(sanitizedValue);
+        sanitizedValue.length > 0 && signInPass.classList.contains("warnintField") && signInPass.classList.remove("warnintField");
+    }
+
+    useEffect(() => {
+        rememberFunc()
+
+    }, [switchBool])
+
     return (
         <div>
             <Navbar/>
-            <div className="flex flex-col md:flex-row justify-center items-start md:py-10 2xl:py-40 gap-5 h-full md:gap-28">
-            <div className="border-2 border-[#255646] rounded-lg py-5 px-[45px] bg-[#87e17f33] lg:w-[429px]">
+            <div className="flex flex-col md:flex-row justify-center items-center  h-full md:py-10 2xl:py-40  md:gap-28">
+            <div className="border border-[#000] px-[45px] py-[31px] rounded-lg bg-[#87e17f33] w-[429px]">
                   <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-2">
-                      <h3 className="font-jakarta text-[#0A0B0A] font-bold text-xl text-base-black ">
-                        Create Account
+                      <h3 className="font-jakarta text-[#0A0B0A] font-bold text-[20px]  ">
+                        Sign In
                       </h3>
-                      <p className="text-sm font-medium text-[#5A5555]">
-                        Create account and get access to our Pro-Touch and many
-                        more features.
-                      </p>
                     </div>
-                    <form onSubmit={singUpFunc}>
-                      <div className="flex flex-col gap-3 w-full ">
+                    <form onSubmit={singInFunc}>
+                      <div className=" flex flex-col gap-3 w-full ">
                         <div className="flex flex-col gap-2">
-                          <p className="text-[14px] font-semibold">Email</p>
+                          <p className="text-[14px] font-semibold leading-3-[16px]">
+                            Email
+                          </p>
                           <input
-                            id="singUpMail"
-                            onChange={onChangeSingUpMail}
-                            value={getSignUpMail}
-                            className="border-[1px] py-[6px] bg-white pl-[10px] rounded pr-[40px] border-solid border-[#5A5555] text-xs font-normal"
+                            className="border-[1px] bg-white py-[6px] pl-[10px] rounded pr-[40px] border-solid border-[#5A5555] text-xs font-normal focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
                             type="text"
+                            onChange={onChangeSingMail}
+                            value={getMail}
+                            id="signInMailId"
                             placeholder="example@example.com"
+                            pattern="^\S+$"
                           />
                         </div>
 
-                       
-                        <div className="flex items-center gap-3 pt-3">
-                          <div
-                            onClick={() =>
-                              setSignUpAgreeTerms(!getSignUpAgreeTerms)
-                            }
-                            className="cursor-pointer"
-                          >
-                            <span
-                              className={`block  rounded p-[1px] border-[1px] border-solid border-[#255646] ${
-                                getSignUpAgreeTerms
-                                  ? "bg-[#255646]"
-                                  : "bg-[#F5F5F5]"
-                              }`}
-                            >
-                              <svg
-                                width="16"
-                                height="16"
-                                viewBox="0 0 16 16"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  d="M13.3333 4L5.99996 11.3333L2.66663 8"
-                                  stroke="#F5F5F5"
-                                  stroke-width="1.6"
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                />
-                              </svg>
-                            </span>
-                          </div>
-                          <p className="text-xs font-medium text-[#255646] -mt-[2px]">
-                            I agree to the Terms of Service, General Terms and
-                            Conditions and Privacy Policy.
+                        <div className="flex flex-col gap-2">
+                          <p className="text-[14px] font-semibold leading-3-[16px]">
+                            Password
                           </p>
+                          <input
+                            className="border-[1px] bg-white py-[6px] pl-[10px] rounded pr-[40px] border-solid border-[#5A5555] text-xs font-normal focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
+                            type="password"
+                            onChange={onChangeSingPass}
+                            value={getPassword}
+                            id="singInPass"
+                            placeholder="Please enter your password"
+                          />
                         </div>
+                       
                       </div>
-
-                      <div className="flex flex-col gap-[10px] pt-[16px]">
-                        <div className="flex ">
+                      <div className="flex flex-col gap-[10px] pt-[14px]">
+                        <div className="flex justify-between">
+                          <div
+                            onClick={() => setRemember(!getRemember)}
+                            className="flex justify-center items-center gap-3 cursor-pointer mt-[14px]"
+                          >
+                            <div>
+                              <span
+                                className={` block rounded border-[1px] border-solid border-black p-[1px] ${getRemember ? "bg-[#2C2C2C]" : "bg-[#F5F5F5]"
+                                  }`}
+                              >
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 16 16"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M13.3333 4L5.99996 11.3333L2.66663 8"
+                                    stroke="#F5F5F5"
+                                    strokeWidth="1.6"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                </svg>
+                              </span>
+                            </div>
+                            <p className="text-[12px]  font-bold leading-[14px] text-[#255646]">
+                              Stay Signed In
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex">
                           <ButtonOne
-                            type="submit"
-                            name="Create Account"
+                          type="submit"
+                            name="Sign In"
                             wrapClassName={"group w-full "}
                             className={"w-full cursor-pointer"}
                           />
-                        
+                        </div>
+                        <div>
+                          <Link
+                            href="/reset-password"
+                            
+                            className="text-[10px] cursor-pointer underline font-normal text-[#726C6C]"
+                          >
+                            Forgot password?
+                           </Link>
                         </div>
                       </div>
                     </form>
                   </div>
                 </div>
                 <div>
-                <div className="hidden md:flex md:flex-col items-start justify-center">
+                    {/* <img className="h-[270px] w-[130px] md:h-[550px] md:w-[330px]" src="/images/sign.png" /> */}
+
+                    <div className="hidden md:flex md:flex-col items-start justify-center">
                 <div>
                   <h1 className="text-[36px] font-extrabold leading-[43px]  text-[#009024] font-jakarta ">
                     Not Just A Background Removal Tool
@@ -368,4 +438,4 @@ const SignUp = () => {
     );
 };
 
-export default SignUp;
+export default Login;

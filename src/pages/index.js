@@ -151,6 +151,7 @@ function dropHandler(ev) {
      <Navbar/>
       <div
         id="homeContainer"
+        className="font-jakarta"
         onDrop={dropHandler}
         onDragOver={dragOverHandler}
         onDragEnter={dragEnterHandler}

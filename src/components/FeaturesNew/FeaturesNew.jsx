@@ -30,13 +30,13 @@ const FeaturesNew = () => {
                   height="44"
                   rx="12"
                   stroke="white"
-                  stroke-width="4"
+                  strokeWidth="4"
                 />
                 <path
                   d="M31.5 2L31.5 65"
                   stroke="white"
-                  stroke-width="4"
-                  stroke-linecap="round"
+                  strokeWidth="4"
+                  strokeLinecap="round"
                 />
               </svg>
               <div className="text-[#87E17F] flex gap-2 md:flex-col text-center md:text-left text-[19px] md:text-[48px] font-bold leading-[112%]">
@@ -134,9 +134,9 @@ const FeaturesNew = () => {
                 <path
                   d="M36.8125 11.625H50.375V25.1875M49.1362 12.8602L13.5601 48.4399M25.1875 50.375H11.625V36.8125"
                   stroke="white"
-                  stroke-width="3.875"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeWidth="3.875"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
               </svg>
               <div className="text-[#87E17F] text-[24px] text-center md:text-left md:text-[48px] font-bold leading-[112%]">
@@ -158,23 +158,23 @@ const FeaturesNew = () => {
                 <path
                   d="M2.5509 29.8175C4.25187 29.5095 5.97713 29.3554 7.70576 29.3569C14.7029 29.3569 21.111 31.8502 26.102 35.9998"
                   stroke="white"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
                 <path
                   d="M22.4795 47.0714H6.97947C5.80494 47.0714 4.67852 46.6048 3.848 45.7743C3.01748 44.9437 2.5509 43.8173 2.5509 42.6428V7.21422C2.5509 6.03969 3.01748 4.91326 3.848 4.08274C4.67852 3.25222 5.80494 2.78564 6.97947 2.78564H42.408C43.5826 2.78564 44.709 3.25222 45.5395 4.08274C46.37 4.91326 46.8366 6.03969 46.8366 7.21422V22.7142"
                   stroke="white"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
                 <path
                   d="M28.0152 24.9284C29.4834 24.9284 30.8914 24.3451 31.9295 23.307C32.9677 22.2688 33.5509 20.8608 33.5509 19.3926C33.5509 17.9245 32.9677 16.5165 31.9295 15.4783C30.8914 14.4402 29.4834 13.8569 28.0152 13.8569C26.547 13.8569 25.139 14.4402 24.1009 15.4783C23.0627 16.5165 22.4795 17.9245 22.4795 19.3926C22.4795 20.8608 23.0627 22.2688 24.1009 23.307C25.139 24.3451 26.547 24.9284 28.0152 24.9284ZM32.5058 46.7789C30.9513 46.5088 30.9513 44.2768 32.5058 44.0067C35.2571 43.5254 37.8032 42.2369 39.8204 40.3049C41.8375 38.3729 43.2346 35.8847 43.8341 33.1566L43.9271 32.7271C44.2636 31.1904 46.4513 31.1815 46.8012 32.7138L46.9163 33.2142C47.5349 35.9317 48.9435 38.4055 50.9647 40.3243C52.986 42.2432 55.5297 43.5213 58.2756 43.9978C59.8389 44.2724 59.8389 46.5132 58.2756 46.7878C55.5297 47.2643 52.986 48.5424 50.9647 50.4612C48.9435 52.3801 47.5349 54.8539 46.9163 57.5714L46.8012 58.0718C46.4513 59.6041 44.2636 59.5952 43.9271 58.0585L43.8341 57.6289C43.2346 54.9009 41.8375 52.4127 39.8204 50.4807C37.8032 48.5487 35.2571 47.2602 32.5058 46.7789Z"
                   stroke="white"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
               </svg>
               <div className="text-[#87E17F] flex gap-2 md:flex-col text-center md:text-left text-[19px] md:text-[48px] font-bold leading-[112%]">

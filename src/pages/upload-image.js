@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
+import { Slide, toast, ToastContainer } from 'react-toastify';
 import { IoMdColorFilter } from "react-icons/io";
 import { apiUrlContextManager, FileContextManager, menuContextManager, OrderContextManager, userContextManager } from '@/context/AppContexts';
 import { generateRandomString, isValidColor } from '@/components/ComonFunc/ComonFunc';
@@ -166,8 +166,9 @@ const UploadImageV4 = () => {
     const showToastMessage = (msg, type = "success") => {
 
         toast[type](msg, {
-            position: toast.POSITION.TOP_RIGHT,
-            autoClose: 5000
+            position: "top-right", // use string instead of toast.POSITION.TOP_RIGHT
+        autoClose: 3000,
+        transition: Slide,
         });
 
     };
@@ -743,77 +744,82 @@ const UploadImageV4 = () => {
         }
     };
 
-    const dataTransfer = async (index) => {
-        let retryCount = 0;
-        const maxRetries = 3;
-        setTotalImage((getTotalImage) => getTotalImage + 1);
-        console.log("storeData", storeData, "storelenght : ", storeData.length, "countImageCallIndex", countImageCallIndex.current, "index is : ", index);
-        const filePath = storeData[index].file.webkitRelativePath.split("/");
+ const dataTransfer = async (index) => {
+    if (!storeData[index] || !storeData[index].file) {
+        console.error(`Invalid index or missing file data at index ${index}`);
+        return;
+    }
 
-        filePath.pop();
+    let retryCount = 0;
+    const maxRetries = 3;
+    setTotalImage((getTotalImage) => getTotalImage + 1);
+    console.log("storeData", storeData, "store length:", storeData.length, "countImageCallIndex", countImageCallIndex.current, "index is:", index);
 
-        const pathOfFile = filePath.join("/");
-        let formData = new FormData();
+    const filePath = storeData[index].file.webkitRelativePath
+        ? storeData[index].file.webkitRelativePath.split("/")
+        : [""];
 
-        console.log("order_master_id", imageOrderId.current);
-        console.log("service_type_id", getServiceTypeId);
-        console.log("file", storeData[index].file);
-        console.log("file_relative_path", pathOfFile);
-        console.log("subscription_plan_type_id", getSubscriptionPlanId);
+    filePath.pop();
+    const pathOfFile = filePath.join("/");
 
+    let formData = new FormData();
 
-        formData.append("order_master_id", imageOrderId.current);
-        formData.append("service_type_id", getServiceTypeId);
-        formData.append("file", storeData[index].file);
-        formData.append("file_relative_path", pathOfFile);
-        formData.append("subscription_plan_type_id", getSubscriptionPlanId);
-        countImageCallIndex.current += 1;
+    formData.append("order_master_id", imageOrderId.current);
+    formData.append("service_type_id", getServiceTypeId);
+    formData.append("file", storeData[index].file);
+    formData.append("file_relative_path", pathOfFile);
+    formData.append("subscription_plan_type_id", getSubscriptionPlanId);
 
-        let getReturnData;
-        while (retryCount < maxRetries) {
+    countImageCallIndex.current += 1;
 
-            try {
-                const response = await fetch(
-                    `${getModelBaseUrl}process-image`,
-                    {
-                        method: "POST",
-                        headers: {
-                            Authorization: "bearer " + getToken,
-                        },
-                        body: formData,
-                    }
-                );
-                const data = await response.json();
-                getReturnData = data;
-                if (data.status_code == 200) {
-                    const updateFileData = [...storeData];
-                    updateFileData[index].proccessImage = data.results;
-                    setStoreData(updateFileData);
-                    setProccessImgIndex((getProccessImgIndex) => getProccessImgIndex + 1);
-                    storeData.length > countImageCallIndex.current && dataTransfer(countImageCallIndex.current);
-                    break; // Break out of the loop if successful
-                } else {
-                    retryCount++; // Increment retry count if status_code is not 200
-                    await delay(1000); // Wait for 1 second before retrying
+    let getReturnData;
+    while (retryCount < maxRetries) {
+        try {
+            const response = await fetch(
+                `${getModelBaseUrl}process-image`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: "bearer " + getToken,
+                    },
+                    body: formData,
                 }
-            } catch (error) {
-                console.error(error);
-                retryCount++; // Increment retry count on error
-                await delay(1000); // Wait for 1 second before retrying
+            );
+            const data = await response.json();
+            getReturnData = data;
+            if (data.status_code == 200) {
+                const updateFileData = [...storeData];
+                updateFileData[index].proccessImage = data.results;
+                setStoreData(updateFileData);
+                setProccessImgIndex((prev) => prev + 1);
+                if (storeData.length > countImageCallIndex.current) {
+                    dataTransfer(countImageCallIndex.current);
+                }
+                break;
+            } else {
+                retryCount++;
+                await delay(1000);
             }
+        } catch (error) {
+            console.error(error);
+            retryCount++;
+            await delay(1000);
         }
+    }
 
-        if (retryCount === maxRetries) {
-            console.error("Maximum retry attempts reached.");
-            // countImageCallIndex.current += 1;
-            setProccessFailcount((proccessFailcount) => proccessFailcount + 1);
-            storeData.length > countImageCallIndex.current && dataTransfer(countImageCallIndex.current);
+    if (retryCount === maxRetries) {
+        console.error("Maximum retry attempts reached.");
+        setProccessFailcount((prev) => prev + 1);
+        if (storeData.length > countImageCallIndex.current) {
+            dataTransfer(countImageCallIndex.current);
         }
+    }
 
-        function delay(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-    };
+    function delay(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+};
+
 
     const dataTransferNewFile = async (index) => {
         let retryCount = 0;
@@ -1870,7 +1876,7 @@ useEffect(() => {
                                                 className='disabled:cursor-not-allowed border-[1px] border-solid border-black rounded bg-[#255646] py-[14px] flex justify-center items-center gap-[5px] text-sm text-white font-medium leading-none'>
                                                 <span>
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="19" height="18" viewBox="0 0 19 18" fill="none">
-                                                        <path d="M9.49995 8.62499V15M9.49995 15L11.75 12.75M9.49995 15L7.24995 12.75M6.49995 5.27699C7.06091 5.35808 7.58056 5.61856 7.9812 6.01949M13.625 10.5C14.7642 10.5 15.5 9.57674 15.5 8.43749C15.4999 7.98645 15.352 7.54786 15.0789 7.18889C14.8059 6.82993 14.4226 6.57037 13.988 6.44999C13.9211 5.60883 13.5725 4.81481 12.9985 4.19631C12.4245 3.5778 11.6587 3.17096 10.8248 3.04156C9.991 2.91215 9.13789 3.06776 8.40344 3.4832C7.66899 3.89865 7.09612 4.54966 6.77745 5.33099C6.10652 5.145 5.38919 5.23316 4.78326 5.57607C4.17733 5.91898 3.73243 6.48855 3.54645 7.15949C3.36047 7.83042 3.44863 8.54775 3.79154 9.15368C4.13445 9.75961 4.70402 10.2045 5.37495 10.3905" stroke="white" stroke-opacity="0.5" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round" />
+                                                        <path d="M9.49995 8.62499V15M9.49995 15L11.75 12.75M9.49995 15L7.24995 12.75M6.49995 5.27699C7.06091 5.35808 7.58056 5.61856 7.9812 6.01949M13.625 10.5C14.7642 10.5 15.5 9.57674 15.5 8.43749C15.4999 7.98645 15.352 7.54786 15.0789 7.18889C14.8059 6.82993 14.4226 6.57037 13.988 6.44999C13.9211 5.60883 13.5725 4.81481 12.9985 4.19631C12.4245 3.5778 11.6587 3.17096 10.8248 3.04156C9.991 2.91215 9.13789 3.06776 8.40344 3.4832C7.66899 3.89865 7.09612 4.54966 6.77745 5.33099C6.10652 5.145 5.38919 5.23316 4.78326 5.57607C4.17733 5.91898 3.73243 6.48855 3.54645 7.15949C3.36047 7.83042 3.44863 8.54775 3.79154 9.15368C4.13445 9.75961 4.70402 10.2045 5.37495 10.3905" stroke="white" stroke-opacity="0.5" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round" />
                                                     </svg>
                                                 </span>
                                                 <span>Download</span>
@@ -1885,7 +1891,7 @@ useEffect(() => {
                                                 className='border-[1px] border-solid border-black rounded bg-[#87E17F] py-[14px] flex justify-center items-center gap-[5px] text-sm text-black font-medium leading-none'>
                                                 <span>
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="19" height="18" viewBox="0 0 19 18" fill="none">
-                                                        <path d="M9.49995 8.62499V15M9.49995 15L11.75 12.75M9.49995 15L7.24995 12.75M6.49995 5.27699C7.06091 5.35808 7.58056 5.61856 7.9812 6.01949M13.625 10.5C14.7642 10.5 15.5 9.57674 15.5 8.43749C15.4999 7.98645 15.352 7.54786 15.0789 7.18889C14.8059 6.82993 14.4226 6.57037 13.988 6.44999C13.9211 5.60883 13.5725 4.81481 12.9985 4.19631C12.4245 3.5778 11.6587 3.17096 10.8248 3.04156C9.991 2.91215 9.13789 3.06776 8.40344 3.4832C7.66899 3.89865 7.09612 4.54966 6.77745 5.33099C6.10652 5.145 5.38919 5.23316 4.78326 5.57607C4.17733 5.91898 3.73243 6.48855 3.54645 7.15949C3.36047 7.83042 3.44863 8.54775 3.79154 9.15368C4.13445 9.75961 4.70402 10.2045 5.37495 10.3905" stroke="black" stroke-opacity="0.5" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round" />
+                                                        <path d="M9.49995 8.62499V15M9.49995 15L11.75 12.75M9.49995 15L7.24995 12.75M6.49995 5.27699C7.06091 5.35808 7.58056 5.61856 7.9812 6.01949M13.625 10.5C14.7642 10.5 15.5 9.57674 15.5 8.43749C15.4999 7.98645 15.352 7.54786 15.0789 7.18889C14.8059 6.82993 14.4226 6.57037 13.988 6.44999C13.9211 5.60883 13.5725 4.81481 12.9985 4.19631C12.4245 3.5778 11.6587 3.17096 10.8248 3.04156C9.991 2.91215 9.13789 3.06776 8.40344 3.4832C7.66899 3.89865 7.09612 4.54966 6.77745 5.33099C6.10652 5.145 5.38919 5.23316 4.78326 5.57607C4.17733 5.91898 3.73243 6.48855 3.54645 7.15949C3.36047 7.83042 3.44863 8.54775 3.79154 9.15368C4.13445 9.75961 4.70402 10.2045 5.37495 10.3905" stroke="black" stroke-opacity="0.5" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round" />
                                                     </svg>
                                                 </span>
                                                 <span>Download All Images</span>
@@ -1999,7 +2005,7 @@ useEffect(() => {
                                                                 className='disabled:bg-gray-400 disabled:cursor-not-allowed border-[1px] border-solid border-black rounded bg-[#255646] py-[14px] px-[24px] flex justify-center items-center gap-[5px] text-sm text-white font-medium leading-none'>
                                                                 <span>
                                                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                                                        <path d="M8.58995 11.41L12.6283 7.37167M16.7583 4.90833L13.3499 15.9867C13.0441 16.98 12.8916 17.4767 12.6274 17.6408C12.515 17.7111 12.3873 17.7535 12.2551 17.7645C12.1229 17.7756 11.99 17.7549 11.8674 17.7042C11.5808 17.585 11.3474 17.1208 10.8824 16.1908L8.72411 11.8725C8.67998 11.7725 8.62611 11.677 8.56328 11.5875C8.51993 11.531 8.46952 11.4803 8.41328 11.4367C8.32646 11.3764 8.2341 11.3245 8.13745 11.2817L3.80995 9.11667C2.88078 8.65167 2.41578 8.41917 2.29661 8.1325C2.24578 8.00981 2.22501 7.87675 2.23603 7.74441C2.24704 7.61206 2.28953 7.48426 2.35995 7.37167C2.52411 7.10833 3.02078 6.955 4.01411 6.64917L15.0933 3.24083C15.8741 3 16.2641 2.88 16.5283 2.9775C16.6418 3.01917 16.7448 3.08503 16.8303 3.1705C16.9158 3.25598 16.9816 3.35903 17.0233 3.4725C17.1199 3.73583 16.9999 4.12584 16.7599 4.90584L16.7583 4.90833Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                                                        <path d="M8.58995 11.41L12.6283 7.37167M16.7583 4.90833L13.3499 15.9867C13.0441 16.98 12.8916 17.4767 12.6274 17.6408C12.515 17.7111 12.3873 17.7535 12.2551 17.7645C12.1229 17.7756 11.99 17.7549 11.8674 17.7042C11.5808 17.585 11.3474 17.1208 10.8824 16.1908L8.72411 11.8725C8.67998 11.7725 8.62611 11.677 8.56328 11.5875C8.51993 11.531 8.46952 11.4803 8.41328 11.4367C8.32646 11.3764 8.2341 11.3245 8.13745 11.2817L3.80995 9.11667C2.88078 8.65167 2.41578 8.41917 2.29661 8.1325C2.24578 8.00981 2.22501 7.87675 2.23603 7.74441C2.24704 7.61206 2.28953 7.48426 2.35995 7.37167C2.52411 7.10833 3.02078 6.955 4.01411 6.64917L15.0933 3.24083C15.8741 3 16.2641 2.88 16.5283 2.9775C16.6418 3.01917 16.7448 3.08503 16.8303 3.1705C16.9158 3.25598 16.9816 3.35903 17.0233 3.4725C17.1199 3.73583 16.9999 4.12584 16.7599 4.90584L16.7583 4.90833Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                                                     </svg>
                                                                 </span>
                                                                 <span>Request Pro-Touch</span>
@@ -2314,7 +2320,7 @@ useEffect(() => {
                                                 onClick={singleFileDownload} className='cursor-not-allowed border-[1px] border-solid border-black rounded bg-[#255646] py-[14px] px-3 flex justify-center items-center gap-[5px] text-sm text-white font-medium leading-none'>
                                                 <span>
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="19" height="18" viewBox="0 0 19 18" fill="none">
-                                                        <path d="M9.49995 8.62499V15M9.49995 15L11.75 12.75M9.49995 15L7.24995 12.75M6.49995 5.27699C7.06091 5.35808 7.58056 5.61856 7.9812 6.01949M13.625 10.5C14.7642 10.5 15.5 9.57674 15.5 8.43749C15.4999 7.98645 15.352 7.54786 15.0789 7.18889C14.8059 6.82993 14.4226 6.57037 13.988 6.44999C13.9211 5.60883 13.5725 4.81481 12.9985 4.19631C12.4245 3.5778 11.6587 3.17096 10.8248 3.04156C9.991 2.91215 9.13789 3.06776 8.40344 3.4832C7.66899 3.89865 7.09612 4.54966 6.77745 5.33099C6.10652 5.145 5.38919 5.23316 4.78326 5.57607C4.17733 5.91898 3.73243 6.48855 3.54645 7.15949C3.36047 7.83042 3.44863 8.54775 3.79154 9.15368C4.13445 9.75961 4.70402 10.2045 5.37495 10.3905" stroke="white" stroke-opacity="0.5" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round" />
+                                                        <path d="M9.49995 8.62499V15M9.49995 15L11.75 12.75M9.49995 15L7.24995 12.75M6.49995 5.27699C7.06091 5.35808 7.58056 5.61856 7.9812 6.01949M13.625 10.5C14.7642 10.5 15.5 9.57674 15.5 8.43749C15.4999 7.98645 15.352 7.54786 15.0789 7.18889C14.8059 6.82993 14.4226 6.57037 13.988 6.44999C13.9211 5.60883 13.5725 4.81481 12.9985 4.19631C12.4245 3.5778 11.6587 3.17096 10.8248 3.04156C9.991 2.91215 9.13789 3.06776 8.40344 3.4832C7.66899 3.89865 7.09612 4.54966 6.77745 5.33099C6.10652 5.145 5.38919 5.23316 4.78326 5.57607C4.17733 5.91898 3.73243 6.48855 3.54645 7.15949C3.36047 7.83042 3.44863 8.54775 3.79154 9.15368C4.13445 9.75961 4.70402 10.2045 5.37495 10.3905" stroke="white" stroke-opacity="0.5" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round" />
                                                     </svg>
                                                 </span>
                                                 <span>Download</span>
@@ -2329,7 +2335,7 @@ useEffect(() => {
                                                 className='border-[1px] border-solid border-black rounded bg-[#87E17F] py-[14px] px-3 flex justify-center items-center gap-[5px] text-sm text-black font-medium leading-none'>
                                                 <span>
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="19" height="18" viewBox="0 0 19 18" fill="none">
-                                                        <path d="M9.49995 8.62499V15M9.49995 15L11.75 12.75M9.49995 15L7.24995 12.75M6.49995 5.27699C7.06091 5.35808 7.58056 5.61856 7.9812 6.01949M13.625 10.5C14.7642 10.5 15.5 9.57674 15.5 8.43749C15.4999 7.98645 15.352 7.54786 15.0789 7.18889C14.8059 6.82993 14.4226 6.57037 13.988 6.44999C13.9211 5.60883 13.5725 4.81481 12.9985 4.19631C12.4245 3.5778 11.6587 3.17096 10.8248 3.04156C9.991 2.91215 9.13789 3.06776 8.40344 3.4832C7.66899 3.89865 7.09612 4.54966 6.77745 5.33099C6.10652 5.145 5.38919 5.23316 4.78326 5.57607C4.17733 5.91898 3.73243 6.48855 3.54645 7.15949C3.36047 7.83042 3.44863 8.54775 3.79154 9.15368C4.13445 9.75961 4.70402 10.2045 5.37495 10.3905" stroke="black" stroke-opacity="0.5" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round" />
+                                                        <path d="M9.49995 8.62499V15M9.49995 15L11.75 12.75M9.49995 15L7.24995 12.75M6.49995 5.27699C7.06091 5.35808 7.58056 5.61856 7.9812 6.01949M13.625 10.5C14.7642 10.5 15.5 9.57674 15.5 8.43749C15.4999 7.98645 15.352 7.54786 15.0789 7.18889C14.8059 6.82993 14.4226 6.57037 13.988 6.44999C13.9211 5.60883 13.5725 4.81481 12.9985 4.19631C12.4245 3.5778 11.6587 3.17096 10.8248 3.04156C9.991 2.91215 9.13789 3.06776 8.40344 3.4832C7.66899 3.89865 7.09612 4.54966 6.77745 5.33099C6.10652 5.145 5.38919 5.23316 4.78326 5.57607C4.17733 5.91898 3.73243 6.48855 3.54645 7.15949C3.36047 7.83042 3.44863 8.54775 3.79154 9.15368C4.13445 9.75961 4.70402 10.2045 5.37495 10.3905" stroke="black" stroke-opacity="0.5" strokeWidth="1.16667" strokeLinecap="round" strokeLinejoin="round" />
                                                     </svg>
                                                 </span>
                                                 <span>Download All Images</span>

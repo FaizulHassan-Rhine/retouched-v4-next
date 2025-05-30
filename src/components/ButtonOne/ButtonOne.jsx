@@ -1,7 +1,7 @@
 import React from 'react';
 
 const
-    ButtonOne = ({ name, wrapClassName = '', className = '', onClick, type='button' }) => {
+    ButtonOne = ({ name, wrapClassName , className , onClick, type='button' }) => {
         return (
             <>
                 <div

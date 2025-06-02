@@ -70,24 +70,31 @@ const checkAiProccesDone = (imgFile) => {
     }, timeout);
   }
 
-const handleSampleImageClick = (img) => {
+const handleSampleImageClick = async (img) => {
   const baseUrl = window.location.origin;
   const fullUrl = baseUrl + img;
 
-  const imageArray = [
-    {
-      file: fullUrl,
-      src: fullUrl,
+  try {
+    const response = await fetch(fullUrl);
+    const blob = await response.blob();
+    const file = new File([blob], `sample-${Date.now()}.jpg`, { type: blob.type });
+
+    const imageObject = {
+      name: file.name,
+      type: file.type,
+      size: file.size,
       rework: false,
       proccessImage: {},
       history: [],
-      status: 'new'
-    },
-  ];
+      status: 'new',
+      src: fullUrl // ✅ Save the real image URL, not blob:
+    };
 
-  // ✅ Use sessionStorage instead of router state
-  sessionStorage.setItem("selectedImages", JSON.stringify(imageArray));
-  window.location.href = "/upload-image";
+    sessionStorage.setItem("selectedImages", JSON.stringify([imageObject]));
+    window.location.href = "/upload-image";
+  } catch (err) {
+    console.error("❌ Sample image fetch failed:", err);
+  }
 };
 
 

@@ -45,15 +45,17 @@ function dropHandler(ev) {
   setDrugBool(false);
   console.log("DROP!");
 
-  let imageArray = [];
+  const items = ev.dataTransfer.items;
+  const files = ev.dataTransfer.files;
+  const imageArray = [];
 
-  if (ev.dataTransfer.items) {
-    [...ev.dataTransfer.items].forEach(item => {
-      if (item.kind === 'file') {
+  const validImageTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg", "image/tiff"];
+
+  if (items && items.length > 0) {
+    [...items].forEach((item) => {
+      if (item.kind === "file") {
         const file = item.getAsFile();
-        const fileType = file.type;
-
-        if (fileType.startsWith("image/")) {
+        if (file && validImageTypes.includes(file.type)) {
           const url = URL.createObjectURL(file);
           imageArray.push({
             file,
@@ -61,9 +63,23 @@ function dropHandler(ev) {
             rework: false,
             proccessImage: {},
             history: [],
-            status: 'new'
+            status: "new",
           });
         }
+      }
+    });
+  } else if (files && files.length > 0) {
+    [...files].forEach((file) => {
+      if (file && validImageTypes.includes(file.type)) {
+        const url = URL.createObjectURL(file);
+        imageArray.push({
+          file,
+          src: url,
+          rework: false,
+          proccessImage: {},
+          history: [],
+          status: "new",
+        });
       }
     });
   }
@@ -73,7 +89,7 @@ function dropHandler(ev) {
   if (imageArray.length > 0) {
     setFileInfo(imageArray);
 
-    const serializableImages = imageArray.map(img => ({
+    const serializableImages = imageArray.map((img) => ({
       src: img.src,
       name: img.file.name,
       type: img.file.type,
@@ -81,28 +97,24 @@ function dropHandler(ev) {
       rework: img.rework,
       proccessImage: img.proccessImage,
       history: img.history,
-      status: img.status
+      status: img.status,
     }));
 
-    console.log("Serializable for sessionStorage:", serializableImages);
     sessionStorage.setItem("selectedImages", JSON.stringify(serializableImages));
 
-    setTimeout(() => {
-      window.location.assign("/upload-image");
-    }, 100);
+    // Navigate using router
+    router.push("/upload-image");
 
-    // Clean up object URLs after navigation
+    // Clean up object URLs after short delay
     setTimeout(() => {
-      imageArray.forEach(img => URL.revokeObjectURL(img.src));
-    }, 1000);
+      imageArray.forEach((img) => URL.revokeObjectURL(img.src));
+    }, 2000);
   } else {
     console.warn("⚠️ No valid image files found.");
     setMsg("No valid images detected.");
     setPopBool(true);
   }
 }
-
-
 
 
   const pastFileFunc = (e) => {

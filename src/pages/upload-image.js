@@ -1195,60 +1195,61 @@ const UploadImageV4 = () => {
     };
 
 useEffect(() => {
-    const maxRetries = 10;
-    let attempt = 0;
+  const maxRetries = 10;
+  let attempt = 0;
 
-    const blobUrlToFile = async (blobUrl, name, type) => {
-        const response = await fetch(blobUrl);
-        const blob = await response.blob();
-        return new File([blob], name, { type });
-    };
+  const checkData = async () => {
+    const stored = sessionStorage.getItem("selectedImages");
 
-    const checkData = async () => {
-        console.log("🔍 Running checkData()...");
-        const stored = sessionStorage.getItem("selectedImages");
-        console.log("Stored Session Data:", stored);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (!Array.isArray(parsed) || parsed.length === 0) throw new Error("Empty or invalid");
 
-        if (stored) {
-            try {
-                const parsed = JSON.parse(stored);
+        const enriched = await Promise.all(parsed.map(async (item) => {
+          try {
+            const response = await fetch(item.src); // src = /images/sample.jpg
+            const blob = await response.blob();
+            const file = new File([blob], item.name || `image-${Date.now()}.jpg`, {
+              type: item.type || blob.type
+            });
 
-                if (Array.isArray(parsed) && parsed.length > 0) {
-                    // Convert any blob URLs to real File objects
-                    const enriched = await Promise.all(
-                        parsed.map(async (item) => {
-                            if (item.src.startsWith("blob:")) {
-                                const file = await blobUrlToFile(item.src, item.name, item.type);
-                                return { ...item, file };
-                            }
-                            return item;
-                        })
-                    );
+            return {
+              ...item,
+              file,
+              src: URL.createObjectURL(file) // recreate a valid blob for display
+            };
+          } catch (e) {
+            console.warn("⚠️ Failed to fetch image", item.src);
+            return null;
+          }
+        }));
 
-                    setFileInfo(enriched);     // ✅ Set to context
-                    setStoreData(enriched);    // ✅ Set to local state
-                    console.log("✅ setFileInfo & setStoreData triggered with:", enriched);
+        const finalImages = enriched.filter(Boolean);
 
-                    setTimeout(() => sessionStorage.removeItem("selectedImages"), 1000);
-                    return;
-                }
-            } catch (err) {
-                console.error("❌ Error parsing stored images", err);
-            }
+        if (finalImages.length > 0) {
+          setFileInfo(finalImages);
+          setStoreData(finalImages);
+          setTimeout(() => sessionStorage.removeItem("selectedImages"), 1000);
+          return;
         }
+      } catch (err) {
+        console.error("❌ Error parsing stored images:", err);
+      }
+    }
 
-        attempt++;
-        if (attempt < maxRetries) {
-            console.warn(`⏳ selectedImages not found yet. Retrying (${attempt})...`);
-            setTimeout(checkData, 200);
-        } else {
-            console.error("❌ selectedImages still not available. Redirecting...");
-            router.push("/");
-        }
-    };
+    attempt++;
+    if (attempt < maxRetries) {
+      setTimeout(checkData, 200);
+    } else {
+      console.error("❌ selectedImages still not available. Redirecting...");
+      router.push("/");
+    }
+  };
 
-    checkData();
+  checkData();
 }, []);
+
 
 
 
